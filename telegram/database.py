@@ -88,10 +88,7 @@ class TelegramDB:
             self.__make_chat__()
 
         if debug:
-            if not LOGGER:
-                self.LOGGER = getLogger()
-            else:
-                self.LOGGER = LOGGER
+            self.LOGGER = getLogger() if not LOGGER else LOGGER
         self.__loop__ = asyncio.get_event_loop()
     
     def prepare_datapack(self, datapack_class: DataPack):
@@ -105,11 +102,15 @@ class TelegramDB:
             :obj:`None`
         """
         for i in inspect.getmembers(datapack_class):
-            if not i[0].startswith('_') and not inspect.ismethod(i[1]):
-                if isinstance(i[1], Member) and i[1].is_primary:
-                    if self.debug:
-                        self.LOGGER.info(f"Initialised {datapack_class} with primary key '{i[0]}'")
-                    self.__dp_cache__[datapack_class] = i[0]
+            if (
+                not i[0].startswith('_')
+                and not inspect.ismethod(i[1])
+                and isinstance(i[1], Member)
+                and i[1].is_primary
+            ):
+                if self.debug:
+                    self.LOGGER.info(f"Initialised {datapack_class} with primary key '{i[0]}'")
+                self.__dp_cache__[datapack_class] = i[0]
     
     def commit(self, datapack: DataPack):
         """
